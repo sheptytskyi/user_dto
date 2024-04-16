@@ -1,9 +1,11 @@
 import typing as t
 from fastapi import APIRouter, Depends, status
 from fastapi.responses import JSONResponse
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from schemas import UserCreateDTO, UserDTO
-
+from schemas import UserCreateDTO
+from database import get_async_session
+from repository import UserRepository
 
 router = APIRouter(
     prefix='/users',
@@ -12,10 +14,23 @@ router = APIRouter(
 
 
 @router.get('', response_class=JSONResponse)
-def get_user_by_id(user_id: int) -> UserDTO:
-    return UserDTO
+async def get_user_by_id(
+    user_id: int,
+    session: AsyncSession = Depends(get_async_session)
+):
+    user_repository = UserRepository(session=session)
+    if user := await user_repository.get_by_id(user_id=user_id):
+        return user
+    return JSONResponse(
+        status_code=status.HTTP_404_NOT_FOUND,
+        content=f"User with ID {user_id} not found"
+    )
 
 
 @router.post('', response_class=JSONResponse)
-def create_user(user: t.Annotated[UserCreateDTO, Depends()]):
-    return JSONResponse(status_code=status.HTTP_201_CREATED, content=UserCreateDTO)
+async def create_user(
+    user: t.Annotated[UserCreateDTO, Depends()],
+    session: AsyncSession = Depends(get_async_session)
+):
+    user_repository = UserRepository(session=session)
+    return await user_repository.add_one(user=user)

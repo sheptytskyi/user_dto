@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from routers import router as user_router
+from database import init_models
 
 app = FastAPI(
     debug=True,
