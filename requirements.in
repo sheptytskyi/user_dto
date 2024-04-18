@@ -2,5 +2,10 @@ fastapi
 uvicorn
 aiosqlite
 pydantic
+pydantic-settings
 sqlalchemy
 pytest
+pytest-asyncio
+python-dotenv
+alembic
+black
